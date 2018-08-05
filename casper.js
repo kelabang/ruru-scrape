@@ -1,5 +1,6 @@
 phantom.casperTest = true;
 
+var system = require('system')
 var fs = require('fs')
 
 var casper = require('casper').create({
@@ -26,7 +27,7 @@ casper.on("page.error", function(msg, trace) {
     
 });
 
-var current = 5
+var current = 1
 var context = null
 
 context = casper.start()
@@ -105,7 +106,7 @@ function normal () {
         
         
     });
-
+    // detail page
     casper.then(function () {
         this.each(output,function (self, item) {
             var urldetail = item.urldetail 
@@ -135,6 +136,22 @@ function normal () {
                     var $rowdetails = $details.querySelectorAll('.row')
                     return $rowdetails[1].innerText
                 })
+                details['detaildatabox'] = this.evaluate(function () {
+                    var $clearFloats = document.querySelectorAll('#bookDataBox > .clearFloats')
+                    var out = []
+                    for (var i = 0, $item; $item = $clearFloats[i]; i++) {
+                        console.log('ini item', $item)
+                        var $key = $item.querySelector('.infoBoxRowTitle')
+                        var $value = $item.querySelector('.infoBoxRowItem')
+                        out.push(
+                            {
+                                'key': $key.innerText,
+                                'value': $value.innerText
+                            }
+                        )
+                    }
+                    return out
+                })
                 console.log('working with url : '+urldetail)
                 // console.log('details of page : ', details.numberofpages, 'INFO')
                 item['details'] = details
@@ -146,12 +163,33 @@ function normal () {
     })
 
     casper.run(function () {
-        console.log('write to file')
+        
+
+
+        var workingDirectory = fs.workingDirectory
+        console.log('fs.workingDirectory :: ', workingDirectory)
+        var _workingDirectory = workingDirectory.split('/')
+        _workingDirectory.pop()
+        _workingDirectory.pop()
+        var rootDir = _workingDirectory.join('/')
+        
+        console.log('system.args', system.args)
+        console.log('rootDir', rootDir)
+
+        var pathTarget = rootDir+'/RUMAJI_DATA_MIGRATION_GDRS'
+        //check if directory exists
+        if(!fs.exists(pathTarget)) {
+            console.log('path not read, create the folder MIGRATION first ', pathTarget)
+            fs.makeDirectory(pathTarget)
+        }
+
         if(output.length < 1) {
-            console.log('it seem already empty')
+            console.log('it seem OUTPUT already empty')
             return this.exit();
         }
-        fs.write('pages-'+current+'.json', JSON.stringify(output, true, 3), 'w')
+
+        console.log('write to file on ', pathTarget)
+        fs.write(pathTarget+'/pages-'+current+'-goodreads.json', JSON.stringify(output, true, 3), 'w')
         current++
         console.log('rerun')
         normal()

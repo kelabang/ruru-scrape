@@ -5,12 +5,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "scrape": "casperjs casper.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "casperjs": "^1.1.4",
     "debug": "^3.1.0",
+    "goodreads-api-node": "0.0.9",
+    "phantom": "^6.0.3",
     "x-ray": "^2.3.3"
   }
 }
